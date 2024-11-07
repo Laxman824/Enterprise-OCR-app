@@ -177,24 +177,24 @@ from utils.validation import DocumentValidator
 
 #         return results
 
-#     def create_interactive_display(self, image: Image.Image, results: Dict):
-#         """Create interactive display with enhanced features"""
-#         st.subheader("Document Analysis Results")
+    def create_interactive_display(self, image: Image.Image, results: Dict):
+        """Create interactive display with enhanced features"""
+        st.subheader("Document Analysis Results")
         
-#         # Create tabs for different views
-#         tabs = st.tabs(["Visual Analysis", "Extracted Data", "Validation Results", "JSON View"])
+        # Create tabs for different views
+        tabs = st.tabs(["Visual Analysis", "Extracted Data", "Validation Results", "JSON View"])
         
-#         with tabs[0]:
-#             self._create_visual_analysis(image, results)
+        with tabs[0]:
+            self._create_visual_analysis(image, results)
             
-#         with tabs[1]:
-#             self._create_data_view(results)
+        with tabs[1]:
+            self._create_data_view(results)
             
-#         with tabs[2]:
-#             self._create_validation_view(results)
+        with tabs[2]:
+            self._create_validation_view(results)
             
-#         with tabs[3]:
-#             self._create_json_view(results)
+        with tabs[3]:
+            self._create_json_view(results)
 
 #     def _create_visual_analysis(self, image: Image.Image, results: Dict):
 #         """Create interactive visual analysis view"""
@@ -623,28 +623,6 @@ class EnterpriseDocumentProcessor:
         best_type = max(type_scores.items(), key=lambda x: x[1])
         return best_type[0] if best_type[1] > 0 else None
 
-    # def _process_by_type(self, doc_type: str, text: str, 
-    #                     boxes: List[Dict],
-    #                     confidence_threshold: float) -> Dict:
-    #     """Process document based on its type"""
-    #     if not doc_type:
-    #         return self._process_generic(text, boxes, confidence_threshold)
-            
-    #     processor = getattr(
-    #         self,
-    #         f'_process_{doc_type}',
-    #         self._process_generic
-    #     )
-        
-    #     results = processor(text, boxes, confidence_threshold)
-    #     results['document_type'] = doc_type
-    #     results['processing_date'] = datetime.now().isoformat()
-        
-    #     # Validate results
-    #     validation_results = self.validator.validate_document(results)
-    #     results.update(validation_results)
-        
-    #     return results
     def _process_by_type(self, doc_type: str, text: str, 
                         boxes: List[Dict],
                         confidence_threshold: float) -> Dict:
@@ -652,10 +630,11 @@ class EnterpriseDocumentProcessor:
         if not doc_type:
             return self._process_generic(text, boxes, confidence_threshold)
             
-        try:
-            processor = getattr(self, f'_process_{doc_type}')
-        except AttributeError:
-            processor = self._process_generic
+        processor = getattr(
+            self,
+            f'_process_{doc_type}',
+            self._process_generic
+        )
         
         results = processor(text, boxes, confidence_threshold)
         results['document_type'] = doc_type
@@ -666,6 +645,7 @@ class EnterpriseDocumentProcessor:
         results.update(validation_results)
         
         return results
+
 
     def _process_generic(self, text: str, boxes: List[Dict],
                             confidence_threshold: float) -> Dict:
