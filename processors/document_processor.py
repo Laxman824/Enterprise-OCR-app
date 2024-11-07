@@ -623,6 +623,28 @@ class EnterpriseDocumentProcessor:
         best_type = max(type_scores.items(), key=lambda x: x[1])
         return best_type[0] if best_type[1] > 0 else None
 
+    # def _process_by_type(self, doc_type: str, text: str, 
+    #                     boxes: List[Dict],
+    #                     confidence_threshold: float) -> Dict:
+    #     """Process document based on its type"""
+    #     if not doc_type:
+    #         return self._process_generic(text, boxes, confidence_threshold)
+            
+    #     processor = getattr(
+    #         self,
+    #         f'_process_{doc_type}',
+    #         self._process_generic
+    #     )
+        
+    #     results = processor(text, boxes, confidence_threshold)
+    #     results['document_type'] = doc_type
+    #     results['processing_date'] = datetime.now().isoformat()
+        
+    #     # Validate results
+    #     validation_results = self.validator.validate_document(results)
+    #     results.update(validation_results)
+        
+    #     return results
     def _process_by_type(self, doc_type: str, text: str, 
                         boxes: List[Dict],
                         confidence_threshold: float) -> Dict:
@@ -630,11 +652,10 @@ class EnterpriseDocumentProcessor:
         if not doc_type:
             return self._process_generic(text, boxes, confidence_threshold)
             
-        processor = getattr(
-            self,
-            f'_process_{doc_type}',
-            self._process_generic
-        )
+        try:
+            processor = getattr(self, f'_process_{doc_type}')
+        except AttributeError:
+            processor = self._process_generic
         
         results = processor(text, boxes, confidence_threshold)
         results['document_type'] = doc_type
@@ -645,7 +666,6 @@ class EnterpriseDocumentProcessor:
         results.update(validation_results)
         
         return results
-
 
     def _process_generic(self, text: str, boxes: List[Dict],
                             confidence_threshold: float) -> Dict:
