@@ -16,3 +16,4 @@ from .document_templates import DOCUMENT_TEMPLATES
 
 
 
+from .document_processor import EnterpriseDocumentProcessor
