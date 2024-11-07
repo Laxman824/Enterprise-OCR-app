@@ -12,6 +12,14 @@ import pandas as pd
 from datetime import datetime
 import traceback
 
+
+from typing import Dict, List, Optional, Tuple
+from doctr.models import ocr_predictor
+import easyocr
+
+from utils.validation import DocumentValidator
+
+
 @dataclass
 class DocumentField:
     name: str

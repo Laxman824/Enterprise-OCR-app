@@ -4,6 +4,18 @@ from utils.visualization import DocumentVisualizer
 import io
 import traceback
 from PIL import Image
+import os
+import sys
+
+# Add the current directory to Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+import streamlit as st
+from processors.document_processor import EnterpriseDocumentProcessor
+from utils.visualization import DocumentVisualizer
+import io
+import traceback
+from PIL import Image
 
 # Set page configuration
 st.set_page_config(
