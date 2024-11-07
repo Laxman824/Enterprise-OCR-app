@@ -1,6 +1,6 @@
 import streamlit as st
 from src.processors.document_processor import EnterpriseDocumentProcessor
-from src.utils.visualization import create_download_buttons
+from src.utils.visualization import DocumentVisualizer
 import io
 from PIL import Image
 
@@ -13,6 +13,9 @@ st.set_page_config(
 )
 
 def main():
+    # Initialize visualizer
+    visualizer = DocumentVisualizer()
+    
     # Custom CSS for better UI
     st.markdown("""
         <style>
@@ -35,7 +38,7 @@ def main():
     with st.sidebar:
         st.title("Document Settings")
         
-        # Document type selection (if not auto-detected)
+        # Document type selection
         doc_type = st.selectbox(
             "Select Document Type",
             ["Auto Detect", "Invoice", "Bank Statement", "Pay Slip", "Expense Report"],
@@ -50,12 +53,6 @@ def main():
             value=0.5,
             help="Minimum confidence score for field extraction"
         )
-        
-        # Advanced settings
-        with st.expander("Advanced Settings"):
-            enable_table_extraction = st.checkbox("Enable Table Extraction", value=True)
-            enable_auto_correction = st.checkbox("Enable Auto Correction", value=True)
-            enable_validation = st.checkbox("Enable Validation", value=True)
 
     # Main content
     st.title("Enterprise Document Processor")
@@ -87,10 +84,7 @@ def main():
                     results = st.session_state.processor.process_document(
                         image=image,
                         doc_type=None if doc_type == "Auto Detect" else doc_type,
-                        confidence_threshold=confidence_threshold,
-                        enable_table_extraction=enable_table_extraction,
-                        enable_auto_correction=enable_auto_correction,
-                        enable_validation=enable_validation
+                        confidence_threshold=confidence_threshold
                     )
                     
                     if results:
@@ -104,25 +98,19 @@ def main():
                         
                         with tabs[0]:
                             # Visual analysis with interactive elements
-                            st.session_state.processor.create_interactive_display(
-                                image, results
-                            )
+                            visualizer.create_interactive_display(image, results)
                         
                         with tabs[1]:
                             # Extracted data in structured format
-                            st.session_state.processor.display_extracted_data(
-                                results
-                            )
+                            visualizer.create_summary_view(results)
                         
                         with tabs[2]:
                             # Validation results and warnings
-                            st.session_state.processor.display_validation_results(
-                                results
-                            )
+                            visualizer.display_validation_results(results)
                         
                         with tabs[3]:
                             # Export options
-                            create_download_buttons(results, uploaded_file.name)
+                            visualizer.create_export_buttons(results, uploaded_file.name)
 
             except Exception as e:
                 st.error(f"Error processing {uploaded_file.name}: {str(e)}")
@@ -141,17 +129,6 @@ def main():
         
         Supported file formats: PDF, PNG, JPG, JPEG, TIFF
         """)
-
-    # Footer
-    st.markdown("""---""")
-    st.markdown(
-        """
-        <div style="text-align: center">
-            <p>Enterprise Document Processor v1.0</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 
 if __name__ == "__main__":
     main()

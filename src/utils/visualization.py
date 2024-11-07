@@ -175,6 +175,28 @@ class DocumentVisualizer:
         else:
             return '#dc3545'  # Red
 
+# Add this method to the DocumentVisualizer class
+    def display_validation_results(self, results: Dict):
+        """Display validation results and warnings"""
+        st.subheader("Validation Results")
+        
+        # Display validation status for each field
+        for field_name, is_valid in results.get('validation_results', {}).items():
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(f"**{field_name}**")
+            with col2:
+                if is_valid:
+                    st.success("✓")
+                else:
+                    st.error("✗")
+        
+        # Display warnings
+        if results.get('warnings'):
+            st.subheader("Warnings")
+            for warning in results['warnings']:
+                st.warning(warning)
+
     def create_export_buttons(self, results: Dict, filename: str):
         """Create download buttons for different formats"""
         st.subheader("Export Results")
