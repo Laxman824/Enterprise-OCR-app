@@ -11,12 +11,6 @@ from easyocr import Reader
 import pandas as pd
 from datetime import datetime
 import traceback
-
-
-from typing import Dict, List, Optional, Tuple
-from doctr.models import ocr_predictor
-import easyocr
-
 from utils.validation import DocumentValidator
 
 class EnterpriseDocumentProcessor:
@@ -44,7 +38,7 @@ class EnterpriseDocumentProcessor:
             st.error(f"Error loading EasyOCR: {str(e)}")
             st.stop()
 
-    def detect_document_type(self, text: str) -> str:
+    def detect_document_type(self, text: str) -> Optional[str]:
         """Detect document type based on key identifiers"""
         scores = {}
         for doc_type, template in self.templates.items():
@@ -59,9 +53,6 @@ class EnterpriseDocumentProcessor:
 
         # Return document type with highest score
         return max(scores.items(), key=lambda x: x[1])[0]
-
-
-##############
 
     def process_document(self, image: Image.Image) -> Dict:
         """Main document processing pipeline"""
@@ -128,10 +119,7 @@ class EnterpriseDocumentProcessor:
 
     def _extract_text(self, image: Image.Image) -> Tuple[str, List[Dict]]:
         """Extract text using both OCR engines"""
-        # DocTR extraction
         doctr_boxes = self._extract_with_doctr(image)
-        
-        # EasyOCR extraction
         easyocr_boxes = self._extract_with_easyocr(image)
         
         # Combine results
@@ -287,111 +275,14 @@ class EnterpriseDocumentProcessor:
                 f'<p style="color: {color}">{status} {field_name}</p>',
                 unsafe_allow_html=True
             )
-        
+            
         # Display warnings
-        if results['warnings']:
-            st.subheader("Warnings")
+        if results.get('warnings'):
+            st.warning("Warnings:")
             for warning in results['warnings']:
-                st.warning(warning)
+                st.write(f"- {warning}")
 
     def _create_json_view(self, results: Dict):
-        """Create JSON view with download option"""
+        """Display raw JSON output"""
         st.subheader("JSON Output")
-        
-        # Display formatted JSON
         st.json(results)
-        
-        # Add download button
-        json_str = json.dumps(results, indent=2)
-        st.download_button(
-            label="Download JSON",
-            data=json_str,
-            file_name=f"extraction_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-            mime="application/json"
-        )
-
-@dataclass
-class DocumentField:
-    name: str
-    pattern: str
-    description: str
-    example: str
-    validation_type: str
-    category: str
-    is_key_field: bool = False
-    location_hints: List[str] = None
-    related_fields: List[str] = None
-    custom_validator: callable = None
-
-    def __post_init__(self):
-        if self.location_hints is None:
-            self.location_hints = []
-        if self.related_fields is None:
-            self.related_fields = []
-
-
-
-def main():
-    st.set_page_config(page_title="Enterprise Document Processor", layout="wide")
-    
-    st.title("Enterprise Document Processing System")
-    st.write("Upload any document for intelligent information extraction")
-    
-    # Initialize processor
-    if 'processor' not in st.session_state:
-        st.session_state.processor = EnterpriseDocumentProcessor()
-    
-    # File upload
-    uploaded_file = st.file_uploader(
-        "Upload Document",
-        type=['pdf', 'png', 'jpg', 'jpeg', 'tiff'],
-        help="Upload a document for processing"
-    )
-    
-    if uploaded_file:
-        try:
-            # Read image
-            image = Image.open(uploaded_file)
-            
-            # Process document
-            results = st.session_state.processor.process_document(image)
-            
-            if results:
-                # Create interactive display
-                st.session_state.processor.create_interactive_display(image, results)
-                
-                # Export options
-                st.subheader("Export Options")
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    # Export as Excel
-                    excel_data = pd.DataFrame({
-                        'Field': results['fields'].keys(),
-                        'Value': results['fields'].values(),
-                        'Confidence': [results['confidence_scores'].get(k, 0) 
-                                     for k in results['fields'].keys()]
-                    })
-                    
-                    st.download_button(
-                        "Download Excel",
-                        excel_data.to_excel(index=False).encode(),
-                        f"extraction_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    )
-                
-                with col2:
-                    # Export as CSV
-                    st.download_button(
-                        "Download CSV",
-                        excel_data.to_csv(index=False),
-                        f"extraction_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                        "text/csv"
-                    )
-                
-        except Exception as e:
-            st.error(f"Error processing document: {str(e)}")
-            st.code(traceback.format_exc())
-
-if __name__ == "__main__":
-    main()
