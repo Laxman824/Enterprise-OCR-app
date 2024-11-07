@@ -183,39 +183,39 @@ class DocumentValidator:
 
         return warnings
 
-def validate_table_data(self, table_data: List[Dict]) -> Tuple[bool, List[str]]:
-        """Validate extracted table data"""
-        warnings = []
-        is_valid = True
+    def validate_table_data(self, table_data: List[Dict]) -> Tuple[bool, List[str]]:
+            """Validate extracted table data"""
+            warnings = []
+            is_valid = True
 
-        if not table_data:
-            return False, ["No table data found"]
+            if not table_data:
+                return False, ["No table data found"]
 
-        # Check for required columns
-        required_columns = set(['description', 'amount', 'date'])  # Customize based on document type
-        
-        # Get actual columns from the first row
-        if table_data:
-            actual_columns = set(table_data[0].keys())
-            missing_columns = required_columns - actual_columns
-            if missing_columns:
-                warnings.append(f"Missing required columns: {', '.join(missing_columns)}")
+            # Check for required columns
+            required_columns = set(['description', 'amount', 'date'])  # Customize based on document type
+            
+            # Get actual columns from the first row
+            if table_data:
+                actual_columns = set(table_data[0].keys())
+                missing_columns = required_columns - actual_columns
+                if missing_columns:
+                    warnings.append(f"Missing required columns: {', '.join(missing_columns)}")
+                    is_valid = False
+
+            # Validate each row
+            for idx, row in enumerate(table_data, 1):
+                row_warnings = self._validate_table_row(row, idx)
+                if row_warnings:
+                    warnings.extend(row_warnings)
+                    is_valid = False
+
+            # Validate table totals if present
+            total_warnings = self._validate_table_totals(table_data)
+            if total_warnings:
+                warnings.extend(total_warnings)
                 is_valid = False
 
-        # Validate each row
-        for idx, row in enumerate(table_data, 1):
-            row_warnings = self._validate_table_row(row, idx)
-            if row_warnings:
-                warnings.extend(row_warnings)
-                is_valid = False
-
-        # Validate table totals if present
-        total_warnings = self._validate_table_totals(table_data)
-        if total_warnings:
-            warnings.extend(total_warnings)
-            is_valid = False
-
-        return is_valid, warnings
+            return is_valid, warnings
 
     def _validate_table_row(self, row: Dict, row_number: int) -> List[str]:
         """Validate individual table row"""
