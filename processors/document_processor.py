@@ -177,24 +177,24 @@ from utils.validation import DocumentValidator
 
 #         return results
 
-    def create_interactive_display(self, image: Image.Image, results: Dict):
-        """Create interactive display with enhanced features"""
-        st.subheader("Document Analysis Results")
+#     def create_interactive_display(self, image: Image.Image, results: Dict):
+#         """Create interactive display with enhanced features"""
+#         st.subheader("Document Analysis Results")
         
-        # Create tabs for different views
-        tabs = st.tabs(["Visual Analysis", "Extracted Data", "Validation Results", "JSON View"])
+#         # Create tabs for different views
+#         tabs = st.tabs(["Visual Analysis", "Extracted Data", "Validation Results", "JSON View"])
         
-        with tabs[0]:
-            self._create_visual_analysis(image, results)
+#         with tabs[0]:
+#             self._create_visual_analysis(image, results)
             
-        with tabs[1]:
-            self._create_data_view(results)
+#         with tabs[1]:
+#             self._create_data_view(results)
             
-        with tabs[2]:
-            self._create_validation_view(results)
+#         with tabs[2]:
+#             self._create_validation_view(results)
             
-        with tabs[3]:
-            self._create_json_view(results)
+#         with tabs[3]:
+#             self._create_json_view(results)
 
 #     def _create_visual_analysis(self, image: Image.Image, results: Dict):
 #         """Create interactive visual analysis view"""
